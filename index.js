@@ -1,26 +1,23 @@
 // backend/index.js
 import express from "express";
 import cors from "cors";
-import dotenv from "dotenv";
 import twilio from "twilio";
-
-dotenv.config();
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
 // =============================
-//  TWILIO CLIENT (CORREGIDO)
+//  TWILIO CLIENT
 // =============================
 console.log("SID:", process.env.TWILIO_ID);
 console.log("TOKEN:", process.env.TWILIO_TOKEN);
-console.log("FROM:", process.env.TWILIO_NUMBER);
+console.log("FROM:", process.env.TWILIO_WHATSAPP);
 
 const client = twilio(process.env.TWILIO_ID, process.env.TWILIO_TOKEN);
 
 // =============================
-//  RUTA RAÍZ
+//  RUTA RAÍZ (Render test)
 // =============================
 app.get("/", (req, res) => {
   res.send("Backend Portafolio - WhatsApp API OK");
@@ -37,18 +34,19 @@ app.post("/send-whatsapp", async (req, res) => {
   }
 
   try {
-    const msg = await client.messages.create({
-      from: process.env.TWILIO_NUMBER,
-      to: "whatsapp:" + to,
+    const result = await client.messages.create({
+      from: process.env.TWILIO_WHATSAPP,
+      to: `whatsapp:${to}`,
       body: message
     });
 
-    console.log("WhatsApp enviado SID:", msg.sid);
+    console.log("WhatsApp enviado SID:", result.sid);
 
-    res.json({ ok: true, sid: msg.sid });
+    return res.json({ ok: true, sid: result.sid });
+
   } catch (error) {
     console.error("Error enviando WhatsApp:", error);
-    res.status(500).json({ ok: false, error: error.message });
+    return res.status(500).json({ ok: false, error: error.message });
   }
 });
 
